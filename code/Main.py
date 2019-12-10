@@ -2,6 +2,7 @@
 
 import argparse
 import DataBase
+import command
 
 def main():
     parser = argparse.ArgumentParser()
@@ -15,3 +16,5 @@ def main():
 
 if __name__ == "__main__":
     main()
+    command.command().cmdloop()
+    
