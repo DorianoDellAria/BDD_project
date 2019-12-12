@@ -26,7 +26,7 @@ class command(cmd.Cmd):
     def do_add_fd(self, line):
         try:
             parsed = self.afd_parser.parse_args(line.split())
-            self.data.df.addFuncDep("\"" +parsed.table+"\"","\""+parsed.lhs+"\"", "\""+parsed.rhs+"\"")
+            self.data.addFuncDep(parsed.table,parsed.lhs, parsed.rhs)
         except SystemExit:
             return
     
