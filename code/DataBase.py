@@ -19,6 +19,7 @@ class DataBase:
 
     def close(self):
         self.db.close()
+        print("\ndata base closed")
         
 
 
