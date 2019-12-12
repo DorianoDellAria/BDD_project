@@ -12,6 +12,12 @@ class command(cmd.Cmd):
         self.afd_parser.add_argument('lhs',help="left arrow")
         self.afd_parser.add_argument('rhs',help="right arrow")
 
+        self.column_parser = argparse.ArgumentParser(prog="column")
+        self.column_parser.add_argument('table', help = 'name of the table')
+
+        self.rm_parser = argparse.ArgumentParser(prog='rmfd')
+        self.rm_parser.add_argument('fd',help='number of the fd',default=-1,type=int,nargs='?')
+
     intro = 'Bienvenue\n'
     prompt = 'sqlfat>'
 
@@ -34,7 +40,24 @@ class command(cmd.Cmd):
         self.afd_parser.print_help()
 
     def do_tables(self, line):
-        print(self.data.printTables())
+        print(self.data.getTables())
+    
+    def do_fd(self, line):
+        print(self.data.getFD())
+
+    def do_column(self,line):
+        try:
+            parsed = self.column_parser.parse_args(line.split())
+            print(self.data.getColumn(parsed.table))
+        except SystemExit:
+            return
+
+    def do_rmfd(self, line):
+        try:
+            parsed = self.rm_parser.parse_args(line.split())
+            self.data.removeFuncDep(parsed.fd)
+        except SystemExit:
+            return
 
 
 

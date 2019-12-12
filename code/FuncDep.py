@@ -7,7 +7,7 @@ class FuncDep:
         self.rhs = rhs
 
     def __str__(self):
-        return self.tableName + self.lhs + self.rhs
+        return "<"+self.tableName +",("+ self.lhs+")," + self.rhs+">"
             
 
 
