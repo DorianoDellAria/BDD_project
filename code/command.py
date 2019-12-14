@@ -83,8 +83,8 @@ class command(cmd.Cmd):
         except SystemExit:
             return
     
-    # def do_cons(self,line):
-    #     self.data.cons('emp')
+    def do_cons(self,line):
+        self.data.cons('emp')
 
 
 

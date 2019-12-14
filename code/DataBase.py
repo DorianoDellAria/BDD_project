@@ -9,7 +9,7 @@ class DataBase:
         if 'FuncDep' in self.getTables():
             cursor = self.db.execute('SELECT * FROM FuncDep;')
             for t in cursor:
-                self.df += [FuncDep.FuncDep(t[0],t[1],t[2],self.db),]
+                self.df += [FuncDep.FuncDep(t[0],t[1],t[2]),]
 
     def getTables(self):
         cursor = self.db.execute("SELECT * FROM sqlite_master WHERE type='table'")
@@ -57,7 +57,7 @@ class DataBase:
         tmp = 'INSERT INTO FuncDep VALUES (?,?,?);'
         self.db.execute(tmp,(tableName,lhs,rhs))
         self.db.commit()
-        self.df += [FuncDep.FuncDep(tableName,lhs,rhs,self.db),]
+        self.df += [FuncDep.FuncDep(tableName,lhs,rhs),]
     
     def getFD(self):
         chain =''
@@ -81,7 +81,7 @@ class DataBase:
     
     def checkFD(self):
         for i in self.df:
-            print(i, " : ", i.check())
+            print(i, " : ", i.check(self))
 
     def closure(self, X:str, F:list, table :str)->list:
         olddep = []
@@ -89,21 +89,21 @@ class DataBase:
         while olddep != newdep:
             olddep = newdep
             for i in F:
-                if table == i.tableName and i.lhs in newdep:
+                if table == i.tableName and i.lhs in newdep and (i.rhs not in newdep):
                     newdep += [i.rhs,]
         return newdep
 
 
-    #pas bon
-    # def cons(self,table):
-    #     tmp = deepcopy(self.df)
-    #     for i in range(len(tmp)):
-    #         t1 = self.closure(tmp[i].lhs, tmp, table)
-    #         tmp2 = deepcopy(tmp)
-    #         tmp2.pop(i)
-    #         t2 = self.closure(tmp[i].lhs, tmp, table)
-    #         if t1 == t2:
-    #             print(tmp[i])
+    #pas fini encore faire le cas où lhs est un tuple
+    def cons(self,table):
+        tmp = deepcopy(self.df)
+        for i in range(len(tmp)):
+            t1 = self.closure(tmp[i].lhs, tmp, table)
+            tmp2 = deepcopy(tmp)
+            tmp2.pop(i)
+            t2 = self.closure(tmp[i].lhs, tmp2, table)
+            if t1 == t2:
+                print(tmp[i])
 
 
 if __name__ == "__main__":
