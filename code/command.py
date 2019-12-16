@@ -22,6 +22,9 @@ class command(cmd.Cmd):
         self.closure_parser.add_argument('table', help='name of the table')
         self.closure_parser.add_argument('element',help='element')
 
+        self.cons_parser=argparse.ArgumentParser(prog='cons')
+        self.cons_parser.add_argument('table',help='name of the table')
+
     intro = 'Bienvenue\n'
     prompt = 'sqlfat>'
 
@@ -83,7 +86,11 @@ class command(cmd.Cmd):
             return
     
     def do_cons(self,line):
-        self.data.cons('emp')
+        try:
+            parsed = self.cons_parser.parse_args(line.split())
+            self.data.cons(parsed.table)
+        except SystemExit:
+            return
 
 
 

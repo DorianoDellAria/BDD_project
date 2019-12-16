@@ -104,21 +104,28 @@ class DataBase:
         return newdep
 
 
-    #pas fini encore faire le cas où lhs est un tuple
     def cons(self,table):
         tmp = deepcopy(self.df)
-        for i in range(len(tmp)):
-            t1 = self.closure(tmp[i].lhs, tmp, table)
-            tmp2 = deepcopy(tmp)
-            tmp2.pop(i)
-            t2 = self.closure(tmp[i].lhs, tmp2, table)
-            b=True
-            for j in t1:
-                if j not in t2:
-                    b=False
+        b=True
+        while b:
+            b=False
+            for i in range(len(tmp)):
+                if tmp[i].tableName != table:
                     continue
-            if b:
-                print(tmp[i])
+                t1 = self.closure(tmp[i].lhs, tmp, table)
+                tmp2 = deepcopy(tmp)
+                tmp2.pop(i)
+                t2 = self.closure(tmp[i].lhs, tmp2, table)
+                b=True
+                for j in t1:
+                    if j not in t2:
+                        b=False
+                        break
+                if b:
+                    print(tmp[i])
+                    tmp.pop(i)
+                    b=True
+                    break
 
 
 
