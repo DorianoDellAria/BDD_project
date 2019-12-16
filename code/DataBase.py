@@ -87,9 +87,9 @@ class DataBase:
         olddep = []
         newdep = [X]
         while olddep != newdep:
-            olddep = newdep
+            olddep= deepcopy(newdep)
             for i in F:
-                if table == i.tableName and i.lhs in newdep and (i.rhs not in newdep):
+                if table == i.tableName and (i.lhs in newdep) and (i.rhs not in newdep):
                     newdep += [i.rhs,]
         return newdep
 
@@ -102,8 +102,14 @@ class DataBase:
             tmp2 = deepcopy(tmp)
             tmp2.pop(i)
             t2 = self.closure(tmp[i].lhs, tmp2, table)
-            if t1 == t2:
+            b=True
+            for j in t1:
+                if j not in t2:
+                    b=False
+                    continue
+            if b:
                 print(tmp[i])
+
 
 
 if __name__ == "__main__":

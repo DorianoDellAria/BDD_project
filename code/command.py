@@ -36,7 +36,6 @@ class command(cmd.Cmd):
     def do_add_fd(self, line):
         try:
             if len(line) != 0:
-                print(len(line))
                 parsed = self.afd_parser.parse_args(line.split())
                 self.data.addFuncDep(parsed.table,parsed.lhs, parsed.rhs)
             else:
