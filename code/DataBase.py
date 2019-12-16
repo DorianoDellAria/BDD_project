@@ -85,10 +85,20 @@ class DataBase:
 
     def closure(self, X:str, F:list, table :str)->list:
         olddep = []
-        newdep = [X]
+        newdep = X.split(',')
         while olddep != newdep:
             olddep= deepcopy(newdep)
             for i in F:
+                if ',' in i.lhs and table == i.tableName:
+                    tmp=i.lhs.split(',')
+                    b=True
+                    for j in tmp:
+                        if j not in newdep:
+                            b=False
+                            break
+                    if b and i.rhs not in newdep:
+                        newdep += [i.rhs,]
+                        continue
                 if table == i.tableName and (i.lhs in newdep) and (i.rhs not in newdep):
                     newdep += [i.rhs,]
         return newdep
