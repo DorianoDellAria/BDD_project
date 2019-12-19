@@ -25,6 +25,9 @@ class command(cmd.Cmd):
         self.cons_parser=argparse.ArgumentParser(prog='cons')
         self.cons_parser.add_argument('table',help='name of the table')
 
+        self.key_parser = argparse.ArgumentParser(prog='key')
+        self.key_parser.add_argument('table', help='name of the table')
+
     intro = 'Bienvenue\n'
     prompt = 'sqlfat>'
 
@@ -89,6 +92,13 @@ class command(cmd.Cmd):
         try:
             parsed = self.cons_parser.parse_args(line.split())
             self.data.cons(parsed.table)
+        except SystemExit:
+            return
+    
+    def do_key(self,line):
+        try:
+            parsed = self.key_parser.parse_args(line.split())
+            print(self.data.key(parsed.table))
         except SystemExit:
             return
 

@@ -126,6 +126,50 @@ class DataBase:
                     tmp.pop(i)
                     b=True
                     break
+            
+    def key(self, table):
+        column = self.getColumn(table)
+        obvious = ''
+        for element in column:
+            test = True
+            for i in self.df:
+                if element == i.rhs:
+                    test=False
+                    break
+            if test:
+                if obvious == '':
+                    obvious+=element
+                else:
+                    obvious+=','+element
+        #return obvious
+        if include( self.df ,self.closure(obvious,self.df,table)):
+            return obvious
+        else:
+            candidate = []
+            #print(column)
+            column = list(filter(lambda x : x in obvious.split(','),column))
+            #print(column, obvious)
+            for i in range(len(self.df)):
+                tmp = obvious
+                if self.df[i].tableName != table:
+                    continue
+                if self.df[i].lhs not in tmp.split(','):
+                    tmp += ","+self.df[i].lhs
+                if include(self.getColumn(table), self.closure(tmp,self.df,table)) and tmp not in candidate:
+                    candidate += [tmp,]
+            return candidate
+        
+    def complete(sefl, chain : str):
+        pass
+
+
+
+def include(a:list,b:list)->bool:
+    for i in a:
+        if i not in b:
+            return False
+    return True
+            
 
 
 
