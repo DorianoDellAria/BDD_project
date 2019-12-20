@@ -127,29 +127,58 @@ class DataBase:
                     b=True
                     break
             
-    def key(self, table):
+    def sKey(self, table):
         column = self.getColumn(table)
         obvious = ''
+        toComp=[]
         '''Finding obvious element'''
         for element in column:
             test = True
             for i in self.df:
-                if element == i.rhs:
+                if element == i.rhs and table==i.tableName:
                     test=False
+                    toComp+=[element,]
                     break
             if test:
                 if obvious == '':
                     obvious+=element
                 else:
                     obvious+=' '+element
+        # print(obvious)
         #end of finding obvious element
-        if include( self.df ,self.closure(obvious,self.df,table)):
+        if include( self.getColumn(table) ,self.closure(obvious,self.df,table)):
             return obvious
         else:
-            candidate = []
-            candidate += [self.complete(obvious,self.df,table),]
-        return candidate
-        
+            candidate=[]
+            for i in range(1,len(toComp)+1):
+                candidate += list(choose_iter(toComp,i))
+            candidate = refact(candidate,obvious)
+            sKey=[]
+            for i in candidate:
+                if include(self.getColumn(table),self.closure(i,self.df,table)):
+                    sKey+=[i,]
+        return self.key(sKey,obvious)
+
+    def key(self,sKey:list,chain:str):
+        for i in range(len(sKey)):
+            sKey[i] = sKey[i].replace(chain,'')
+        test = True
+        result=[]
+        for i in range(len(sKey)):
+            for j in range(len(sKey)):
+                if i==j:
+                    continue
+                if include(sKey[j].split(),sKey[i].split()) and len(sKey[i].split())>len(sKey[j].split()):
+                    test=False
+                    break
+            if test:
+                if chain=='':
+                    result+=[sKey[i],]
+                else:
+                    result+=[sKey[i]+' '+chain,]
+        return result
+
+    '''    
     def complete(self, chain : str,DFlist :list ,table :str):
         for i in range(len(DFlist)):
             if DFlist[i].tableName != table:
@@ -160,6 +189,7 @@ class DataBase:
                 return chain
             else:
                 return self.complete(chain,DFlist[i+1:],table)
+    '''
 
 
 
@@ -177,13 +207,15 @@ def choose_iter(elements, length):
             for next in choose_iter(elements[i+1:len(elements)], length-1):
                 yield (elements[i],) + next
 
-def refact(arr:list):
+def refact(arr:list,chain:str):
     result=[]
     for i in arr:
         tmp = ''
         for j in range(len(i)-1):
             tmp+=str(i[j])+' '
         tmp += str(i[len(i)-1])
+        if chain != '':
+            tmp += ' '+ chain
         result+=[tmp,]
     return result
             

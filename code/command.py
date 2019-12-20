@@ -54,7 +54,7 @@ class command(cmd.Cmd):
                 print(self.data.getColumn(table))
                 lhs = str(input('lhs : '))
                 print(self.data.getColumn(table))
-                rhs = str(input('rhs :'))
+                rhs = str(input('rhs : '))
                 self.data.addFuncDep(table,lhs,rhs)
         except SystemExit:
             return
@@ -103,7 +103,7 @@ class command(cmd.Cmd):
     def do_key(self,line):
         try:
             parsed = self.key_parser.parse_args(line.split())
-            print(self.data.key(parsed.table))
+            print(self.data.sKey(parsed.table))
         except SystemExit:
             return
 
