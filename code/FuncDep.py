@@ -11,7 +11,7 @@ class FuncDep:
         return self.tableName +" : ("+ self.lhs+") -> " + self.rhs
 
     def check(self,other):
-        cursor = other.db.execute("SELECT {},{} from {};".format(concat(self.lhs.split(',')),self.rhs,self.tableName))
+        cursor = other.db.execute("SELECT {},{} from {};".format(concat(self.lhs.split(' ')),self.rhs,self.tableName))
         dico = {}
         for i in cursor:
             if (i[:len(i)-1] in dico.keys()) and (dico[i[:len(i)-1]] != i[len(i)-1]):
@@ -28,6 +28,6 @@ def concat(l):
     chain = ''
     for i in range(len(l)-1):
         chain+=l[i]
-        chain+=','
+        chain+=' '
     chain+=l[len(l)-1]
     return chain
