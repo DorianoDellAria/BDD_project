@@ -43,7 +43,7 @@ class DataBase:
             return
 
         """condition d'existance de la gauche"""
-        for i in lhs.split(','):
+        for i in lhs.split(' '):
             if i not in self.getColumn(tableName):
                 print("lhs : this column doesn't exist")
                 return
@@ -85,30 +85,140 @@ class DataBase:
 
     def closure(self, X:str, F:list, table :str)->list:
         olddep = []
-        newdep = [X]
+        newdep = X.split(' ')
         while olddep != newdep:
             olddep= deepcopy(newdep)
             for i in F:
+                if ' ' in i.lhs and table == i.tableName:
+                    tmp=i.lhs.split(' ')
+                    b=True
+                    for j in tmp:
+                        if j not in newdep:
+                            b=False
+                            break
+                    if b and i.rhs not in newdep:
+                        newdep += [i.rhs,]
+                        continue
                 if table == i.tableName and (i.lhs in newdep) and (i.rhs not in newdep):
                     newdep += [i.rhs,]
         return newdep
 
 
-    #pas fini encore faire le cas où lhs est un tuple
     def cons(self,table):
         tmp = deepcopy(self.df)
-        for i in range(len(tmp)):
-            t1 = self.closure(tmp[i].lhs, tmp, table)
-            tmp2 = deepcopy(tmp)
-            tmp2.pop(i)
-            t2 = self.closure(tmp[i].lhs, tmp2, table)
-            b=True
-            for j in t1:
-                if j not in t2:
-                    b=False
+        b=True
+        while b:
+            b=False
+            for i in range(len(tmp)):
+                if tmp[i].tableName != table:
                     continue
-            if b:
-                print(tmp[i])
+                t1 = self.closure(tmp[i].lhs, tmp, table)
+                tmp2 = deepcopy(tmp)
+                tmp2.pop(i)
+                t2 = self.closure(tmp[i].lhs, tmp2, table)
+                b=True
+                for j in t1:
+                    if j not in t2:
+                        b=False
+                        break
+                if b:
+                    print(tmp[i])
+                    tmp.pop(i)
+                    b=True
+                    break
+            
+    def sKey(self, table):
+        column = self.getColumn(table)
+        obvious = ''
+        toComp=[]
+        '''Finding obvious element'''
+        for element in column:
+            test = True
+            for i in self.df:
+                if element == i.rhs and table==i.tableName:
+                    test=False
+                    toComp+=[element,]
+                    break
+            if test:
+                if obvious == '':
+                    obvious+=element
+                else:
+                    obvious+=' '+element
+        # print(obvious)
+        #end of finding obvious element
+        if include( self.getColumn(table) ,self.closure(obvious,self.df,table)):
+            return obvious
+        else:
+            candidate=[]
+            for i in range(1,len(toComp)+1):
+                candidate += list(choose_iter(toComp,i))
+            candidate = refact(candidate,obvious)
+            sKey=[]
+            for i in candidate:
+                if include(self.getColumn(table),self.closure(i,self.df,table)):
+                    sKey+=[i,]
+        return self.key(sKey,obvious)
+
+    def key(self,sKey:list,chain:str):
+        for i in range(len(sKey)):
+            sKey[i] = sKey[i].replace(chain,'')
+        test = True
+        result=[]
+        for i in range(len(sKey)):
+            for j in range(len(sKey)):
+                if i==j:
+                    continue
+                if include(sKey[j].split(),sKey[i].split()) and len(sKey[i].split())>len(sKey[j].split()):
+                    test=False
+                    break
+            if test:
+                if chain=='':
+                    result+=[sKey[i],]
+                else:
+                    result+=[sKey[i]+' '+chain,]
+        return result
+
+    '''    
+    def complete(self, chain : str,DFlist :list ,table :str):
+        for i in range(len(DFlist)):
+            if DFlist[i].tableName != table:
+                continue
+            if DFlist[i].lhs not in chain.split(' '):           #to do : le cas où DFlist[i].lhs est un tuple
+                chain+=' '+DFlist[i].lhs
+            if include(self.getColumn(table),self.closure(chain,DFlist,table)):
+                return chain
+            else:
+                return self.complete(chain,DFlist[i+1:],table)
+    '''
+
+
+
+def include(a:list,b:list)->bool:
+    for i in a:
+        if i not in b:
+            return False
+    return True
+
+def choose_iter(elements, length):
+    for i in range(len(elements)):
+        if length == 1:
+            yield (elements[i],)
+        else:
+            for next in choose_iter(elements[i+1:len(elements)], length-1):
+                yield (elements[i],) + next
+
+def refact(arr:list,chain:str):
+    result=[]
+    for i in arr:
+        tmp = ''
+        for j in range(len(i)-1):
+            tmp+=str(i[j])+' '
+        tmp += str(i[len(i)-1])
+        if chain != '':
+            tmp += ' '+ chain
+        result+=[tmp,]
+    return result
+            
 
 
 

@@ -1,5 +1,6 @@
 import cmd
 import argparse
+from FuncDep import concat
 
 class command(cmd.Cmd):
 
@@ -8,9 +9,7 @@ class command(cmd.Cmd):
         self.data = data
 
         self.afd_parser = argparse.ArgumentParser(prog="add_fd")
-        self.afd_parser.add_argument('table', help="table",nargs='?')
-        self.afd_parser.add_argument('lhs',help="left arrow",nargs='?')
-        self.afd_parser.add_argument('rhs',help="right arrow",nargs='?')
+        self.afd_parser.add_argument('table', help="table",nargs='+')
 
         self.column_parser = argparse.ArgumentParser(prog="column")
         self.column_parser.add_argument('table', help = 'name of the table')
@@ -20,7 +19,13 @@ class command(cmd.Cmd):
 
         self.closure_parser = argparse.ArgumentParser(prog="closure")
         self.closure_parser.add_argument('table', help='name of the table')
-        self.closure_parser.add_argument('element',help='element')
+        self.closure_parser.add_argument('element',help='element',nargs='+')
+
+        self.cons_parser=argparse.ArgumentParser(prog='cons')
+        self.cons_parser.add_argument('table',help='name of the table')
+
+        self.key_parser = argparse.ArgumentParser(prog='key')
+        self.key_parser.add_argument('table', help='name of the table')
 
     intro = 'Bienvenue\n'
     prompt = 'sqlfat>'
@@ -37,14 +42,19 @@ class command(cmd.Cmd):
         try:
             if len(line) != 0:
                 parsed = self.afd_parser.parse_args(line.split())
-                self.data.addFuncDep(parsed.table,parsed.lhs, parsed.rhs)
+                if len(parsed.table) >=3:
+                    lhs = parsed.table[1:len(parsed.table)-1]
+                    lhs = concat(lhs)
+                    self.data.addFuncDep(parsed.table[0],lhs, parsed.table[-1])
+                else:
+                    print('argument missed')
             else:
                 print(self.data.getTables())
                 table = str(input('Enter the table : '))
                 print(self.data.getColumn(table))
                 lhs = str(input('lhs : '))
                 print(self.data.getColumn(table))
-                rhs = str(input('rhs :'))
+                rhs = str(input('rhs : '))
                 self.data.addFuncDep(table,lhs,rhs)
         except SystemExit:
             return
@@ -78,12 +88,24 @@ class command(cmd.Cmd):
     def do_closure(self,line):
         try:
             parsed= self.closure_parser.parse_args(line.split())
-            print(self.data.closure(parsed.element,self.data.df,parsed.table))
+            element = concat(parsed.element)
+            print(self.data.closure(element,self.data.df,parsed.table))
         except SystemExit:
             return
     
     def do_cons(self,line):
-        self.data.cons('emp')
+        try:
+            parsed = self.cons_parser.parse_args(line.split())
+            self.data.cons(parsed.table)
+        except SystemExit:
+            return
+    
+    def do_key(self,line):
+        try:
+            parsed = self.key_parser.parse_args(line.split())
+            print(self.data.sKey(parsed.table))
+        except SystemExit:
+            return
 
 
 
