@@ -19,6 +19,11 @@ class FuncDep:
             dico[i[:len(i)-1]] = i[len(i)-1]
         
         return True
+    
+    def __eq__(self,other):
+        if self.tableName==other.tableName and self.lhs==other.lhs and self.rhs==other.rhs:
+            return True
+        return False
             
 
 
