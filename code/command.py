@@ -11,6 +11,9 @@ class command(cmd.Cmd):
         self.afd_parser = argparse.ArgumentParser(prog="add_fd")
         self.afd_parser.add_argument('table', help="table",nargs='+')
 
+        self.fd_parser = argparse.ArgumentParser(prog='fd')
+        self.fd_parser.add_argument('table', help='name of the table', nargs='?')
+
         self.column_parser = argparse.ArgumentParser(prog="column")
         self.column_parser.add_argument('table', help = 'name of the table')
 
@@ -72,7 +75,11 @@ class command(cmd.Cmd):
         print(self.data.getTables())
     
     def do_fd(self, line):
-        print(self.data.getFD())
+        try:
+            parsed=self.fd_parser.parse_args(line.split())
+            print(self.data.getFD(parsed.table))
+        except SystemExit:
+            return
 
     def do_column(self,line):
         try:
@@ -102,7 +109,12 @@ class command(cmd.Cmd):
     def do_cons(self,line):
         try:
             parsed = self.cons_parser.parse_args(line.split())
-            self.data.cons(parsed.table)
+            toDel = self.data.cons(parsed.table)
+            if len(toDel)!=0:
+                answer = str(input('Do you want do delete ? (y/n) : '))
+                if answer == 'y':
+                    for i in toDel:
+                        self.data.removeFuncDep(self.data.df.index(i))
         except SystemExit:
             return
     

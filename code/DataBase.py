@@ -60,11 +60,12 @@ class DataBase:
         self.db.commit()
         self.df += [FuncDep.FuncDep(tableName,lhs,rhs),]
     
-    def getFD(self):
+    def getFD(self, table=None):
         chain =''
         for i in range(len(self.df)):
-            chain+=str(i) + " : "+ str(self.df[i])
-            chain+='\n'
+            if table==None or table==self.df[i].tableName:
+                chain+=str(i) + " : "+ str(self.df[i])
+                chain+='\n'
         return chain
 
     def removeFuncDep(self,number):
@@ -108,6 +109,7 @@ class DataBase:
     def cons(self,table):
         tmp = deepcopy(self.df)
         b=True
+        res = []
         while b:
             b=False
             for i in range(len(tmp)):
@@ -124,9 +126,10 @@ class DataBase:
                         break
                 if b:
                     print(tmp[i])
-                    tmp.pop(i)
+                    res += [tmp.pop(i),]
                     b=True
                     break
+        return res
             
     def sKey(self, table):
         column = self.getColumn(table)
