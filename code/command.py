@@ -27,6 +27,12 @@ class command(cmd.Cmd):
         self.key_parser = argparse.ArgumentParser(prog='key')
         self.key_parser.add_argument('table', help='name of the table')
 
+        self.bcnf_parser = argparse.ArgumentParser(prog='bcnf')
+        self.bcnf_parser.add_argument('table', help='name of the table')
+
+        self.threenf_parser = argparse.ArgumentParser(prog='3nf')
+        self.threenf_parser.add_argument('table', help='name of the table')
+
     intro = 'Bienvenue\n'
     prompt = 'sqlfat>'
 
@@ -104,6 +110,23 @@ class command(cmd.Cmd):
         try:
             parsed = self.key_parser.parse_args(line.split())
             print(self.data.sKey(parsed.table))
+        except SystemExit:
+            return
+        
+    def do_bcnf(self,line):
+        try:
+            parsed = self.bcnf_parser.parse_args(line.split())
+            if self.data.checkBCNF(parsed.table):
+                print('La table '+parsed.table+' est en BCNF')
+            else:
+                print('La table '+parsed.table+' n\'est pas en BCNF')
+        except SystemExit:
+            return
+
+    def do_3nf(self,line):
+        try:
+            parsed = self.threenf_parser.parse_args(line.split())
+            print(self.data.check3NF(parsed.table))
         except SystemExit:
             return
 

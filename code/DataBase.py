@@ -179,7 +179,37 @@ class DataBase:
         for i in range(len(result)):
             result[i] = result[i] + chain
         return result
+    
+    def checkBCNF(self, table:str)->bool:
+        keys = self.sKey(table)
+        for i in self.df:
+            if i.tableName==table and not i.lhs in keys:
+                return False
+        return True
+    
+    def check3NF(self,table:str)->bool:
+        if self.checkBCNF(table):
+            return True
+        else:
+            keys = self.sKey(table) 
+            for i in self.df:
+                if i.tableName==table and (i.lhs not in keys) and (not includeInKey(i.rhs,keys)):
+                    return False
+            return True
+                
+                    
 
+                    
+
+
+
+
+
+def includeInKey(rhs:str,keys:list)->bool:
+    for i in keys:
+        if rhs in i.split():
+            return True
+    return False
 
 
 def include(a:list,b:list)->bool:
