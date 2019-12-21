@@ -1,6 +1,7 @@
 import sqlite3
 import FuncDep
 from copy import deepcopy
+from random import shuffle
 
 class DataBase:
     def __init__(self, name):
@@ -162,34 +163,22 @@ class DataBase:
     def key(self,sKey:list,chain:str):
         for i in range(len(sKey)):
             sKey[i] = sKey[i].replace(chain,'')
-        test = True
-        result=[]
-        for i in range(len(sKey)):
-            for j in range(len(sKey)):
-                if i==j:
-                    continue
-                if include(sKey[j].split(),sKey[i].split()) and len(sKey[i].split())>len(sKey[j].split()):
-                    test=False
-                    break
-            if test:
-                if chain=='':
-                    result+=[sKey[i],]
-                else:
-                    result+=[sKey[i]+' '+chain,]
+        result = deepcopy(sKey)
+        for loop in range(len(sKey)):
+            copy = deepcopy(result)
+            for i in range(len(sKey)):
+                for j in range(len(sKey)):
+                    if i==j:
+                        continue
+                    if include(sKey[j].split(),sKey[i].split()) and sKey[i] in result and len(sKey[i].split())>len(sKey[j].split()):
+                        result.remove(sKey[i])
+                        i-=1
+                        break
+            if copy==result:
+                break
+        for i in range(len(result)):
+            result[i] = result[i] + chain
         return result
-
-    '''    
-    def complete(self, chain : str,DFlist :list ,table :str):
-        for i in range(len(DFlist)):
-            if DFlist[i].tableName != table:
-                continue
-            if DFlist[i].lhs not in chain.split(' '):           #to do : le cas où DFlist[i].lhs est un tuple
-                chain+=' '+DFlist[i].lhs
-            if include(self.getColumn(table),self.closure(chain,DFlist,table)):
-                return chain
-            else:
-                return self.complete(chain,DFlist[i+1:],table)
-    '''
 
 
 
@@ -199,6 +188,7 @@ def include(a:list,b:list)->bool:
             return False
     return True
 
+# https://stackoverflow.com/questions/127704/algorithm-to-return-all-combinations-of-k-elements-from-n
 def choose_iter(elements, length):
     for i in range(len(elements)):
         if length == 1:
