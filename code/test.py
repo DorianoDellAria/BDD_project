@@ -1,5 +1,5 @@
 import unittest
-from DataBase import include
+from DataBase import include,choose_iter,refact
 
 class TestDataBase(unittest.TestCase):
     def test_include(self):
@@ -10,5 +10,4 @@ class TestDataBase(unittest.TestCase):
         self.assertTrue(include(a,b))
         a += ['d',]
         self.assertFalse(include(a,b))
-    
     

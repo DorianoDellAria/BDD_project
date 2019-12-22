@@ -40,7 +40,7 @@ def concat(l):
 def commaConcat(l):
     chain = ''
     for i in range(len(l)-1):
-        chain+=l[i]
+        chain+=str(l[i])
         chain+=','
-    chain+=l[len(l)-1]
+    chain+=str(l[len(l)-1])
     return chain
