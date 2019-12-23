@@ -8,7 +8,7 @@ class command(cmd.Cmd):
         cmd.Cmd.__init__(self, **kwargs)
         self.data = data
 
-        self.afd_parser = argparse.ArgumentParser(prog="add_fd")
+        self.afd_parser = argparse.ArgumentParser(prog="addfd")
         self.afd_parser.add_argument('table', help="table",nargs='+')
 
         self.fd_parser = argparse.ArgumentParser(prog='fd')
@@ -51,7 +51,7 @@ class command(cmd.Cmd):
         self.data.close()
         return True
 
-    def do_add_fd(self, line):
+    def do_addfd(self, line):
         try:
             if len(line) != 0:
                 parsed = self.afd_parser.parse_args(line.split())
@@ -72,11 +72,10 @@ class command(cmd.Cmd):
         except SystemExit:
             return
     
-    def help_add_fd(self):
-        self.afd_parser.print_help()
 
     def do_tables(self, line):
         print(self.data.getTables())
+
     
     def do_fd(self, line):
         try:

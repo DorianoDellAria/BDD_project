@@ -51,7 +51,6 @@ class DataBase:
                 print("lhs : this column doesn't exist")
                 return
             if i not in newLHS:
-                print(newLHS)
                 newLHS+= ' '+i
         
         """condition d'existance de la droite"""
