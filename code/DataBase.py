@@ -13,6 +13,7 @@ class DataBase:
             for t in cursor:
                 self.df += [FuncDep.FuncDep(t[0],t[1],t[2]),]
 
+    """imprime les tables de la database"""
     def getTables(self)->list:
         cursor = self.db.execute("SELECT * FROM sqlite_master WHERE type='table'")
         chain = []
@@ -20,16 +21,19 @@ class DataBase:
             chain += [i[2],]
         return chain
 
+    """imprime les colonnes d'une table"""
     def getColumn(self, table):
         if table not in self.getTables():
             return "this table doesn't exist"
         cursor = self.db.execute("SELECT * FROM " + table)
         return list(map(lambda x: x[0],cursor.description))
 
+    """ferme la DB"""
     def close(self):
         self.db.close()
         print("\ndata base closed")
-
+        
+    """ajout de dépendances fonctionnelles"""
     def addFuncDep(self, tableName, lhs, rhs):
         if 'FuncDep' not in self.getTables():
             self.db.execute('''CREATE TABLE FuncDep (
@@ -63,6 +67,7 @@ class DataBase:
         self.db.commit()
         self.df += [FuncDep.FuncDep(tableName,newLHS,rhs),]
     
+    """imprime les DF d'une database"""
     def getFD(self, table=None)->str:
         chain =''
         for i in range(len(self.df)):
@@ -71,6 +76,7 @@ class DataBase:
                 chain+='\n'
         return chain
 
+    """supprime les DF"""
     def removeFuncDep(self,number)->None:
         if number == -1:
             print(self.getFD())
@@ -84,10 +90,13 @@ class DataBase:
         self.db.commit()
         self.df.pop(number)
     
+    """vérifie si les DF sont respectée"""
     def checkFD(self)->None:
         for i in self.df:
             print(i, " : ", i.check(self))
 
+    """fermeture d'un ensemble d'attribut où X est l'ensemble d'attribut,
+    F est la liste des DF et table est le nom de la table"""
     def closure(self, X:str, F:list, table :str)->list:
         olddep = []
         newdep = X.split(' ')
@@ -109,6 +118,8 @@ class DataBase:
         return newdep
 
 
+    """affiche les DF qui sont conséquence des autres.
+    table est le nom de la table à analyser"""
     def cons(self,table)->list:
         tmp = deepcopy(self.df)
         b=True
@@ -133,7 +144,8 @@ class DataBase:
                     b=True
                     break
         return res
-            
+
+    """envoie l'ensemble des superClés dans la méthode key()"""        
     def sKey(self, table)->list:
         column = self.getColumn(table)
         obvious = ''
@@ -166,6 +178,8 @@ class DataBase:
                     sKey+=[i,]
         return self.key(sKey,obvious)
 
+    """à partir d'un ensemble de superClé(sKey), calcule les clé minimales
+    chain est l'ensemble d'attributs nécessaire pour former une clé"""
     def key(self,sKey:list,chain:str)->list:
         for i in range(len(sKey)):
             sKey[i] = sKey[i].replace(chain,'')
@@ -186,12 +200,14 @@ class DataBase:
             result[i] = result[i] + chain
         return result
     
+    """vérifie qu'une table est en BCNF"""
     def checkBCNF(self, table:str)->bool:
         for i in self.df:
             if i.tableName==table and not include(self.getColumn(table),self.closure(i.lhs,self.df,table)):
                 return False
         return True
     
+    """vérfie qu'une table est en 3NF"""
     def check3NF(self,table:str)->bool:
         if self.checkBCNF(table):
             return True
@@ -203,6 +219,9 @@ class DataBase:
             return True
 
 
+    """decompose une table en 3NF
+    table est le nom de la table
+    fileName est le nom de la nouvelle Database"""
     def decompose(self,table:str,fileName:str):
         decomp = DataBase(fileName)
 
@@ -266,7 +285,7 @@ class DataBase:
     
 
 
-
+"""retourne un dictionaire contenant le nom d'une colonne d'une table et son type"""
 def getType(db:sqlite3.Connection,table:str)->dict:
     cursor = db.execute("PRAGMA table_info({})".format(table))
     res = {}
@@ -276,21 +295,22 @@ def getType(db:sqlite3.Connection,table:str)->dict:
         
 
 
-
+"""vérifie si un élément est dans une clé"""
 def includeInKey(rhs:str,keys:list)->bool:
     for i in keys:
         if rhs in i.split():
             return True
     return False
 
-
+"""inclusion mathémathique. Se lit A est inclu à B"""
 def include(a:list,b:list)->bool:
     for i in a:
         if i not in b:
             return False
     return True
 
-# https://stackoverflow.com/questions/127704/algorithm-to-return-all-combinations-of-k-elements-from-n
+"""retourne toutes les combinaison possible d'une liste.
+Le code à été trouvé sur https://stackoverflow.com/questions/127704/algorithm-to-return-all-combinations-of-k-elements-from-n""" 
 def choose_iter(elements, length):
     for i in range(len(elements)):
         if length == 1:
@@ -299,6 +319,7 @@ def choose_iter(elements, length):
             for next in choose_iter(elements[i+1:len(elements)], length-1):
                 yield (elements[i],) + next
 
+"""mets le résultat de choose_iter sous une autre forme"""
 def refact(arr:list,chain:str):
     result=[]
     for i in arr:
@@ -311,11 +332,3 @@ def refact(arr:list,chain:str):
         result+=[tmp,]
     return result
             
-
-
-
-if __name__ == "__main__":
-    test = DataBase('tables.db')
-    print(test.getTables())
-    print(test.getColumn('dept'))
-    test.close()

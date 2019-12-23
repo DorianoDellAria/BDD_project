@@ -18,19 +18,19 @@ commande :
     -fd [<table>] : affiche les DF, il est possible d'ajouter un filtre en spécifiant l'argument <table>
 
     -rmfd [<#DF>] : rmfd sans arguments vous proposera de tapez un entier correspondant à la DF que vous voulez supprimer
-    il est possible de la supprimer directement en spéifiant l'argument <#DF> qui correspond au numéro de la DF
+    il est possible de la supprimer directement en spécifiant l'argument <#DF> qui correspond au numéro de la DF
 
     -check : affiche toutes les DF suivi de True ou False si la DF est respectée ou non
 
-    -closure <atr1> [<atr2> ...] : affiche la fermeture transitive d'un ou plusieurs attirbuts
+    -closure <atr1> [<atr2> ...] : affiche la fermeture d'un ou plusieurs attributs
 
-    -cons <table> : affiche les dépendances fonctionelles d'une table qui sont une conséquence d'autres DF
+    -cons <table> : affiche les dépendances fonctionelles d'une table (<table>) qui sont une conséquence d'autres DF
 
     -key <table> : affiche les clé d'une table
 
-    -bcnf <table> : vérifie qu'une table soit en bcnf
+    -bcnf <table> : vérifie qu'une table est en bcnf
 
-    -3nf <table> : vérifie qu'une table soit en 3nf
+    -3nf <table> : vérifie qu'une table est en 3nf
 
     -decompose <table> [<database_name>] : exporte une décomposition si la table n'est pas en 3nf. Par défaut la database s'appelle "décomposition.db",
     mais vous êtes libre de changer le nom en spécifiant le paramètre database_name. Attention si la database donnée en argument existe déjà, elle est écrasée. 

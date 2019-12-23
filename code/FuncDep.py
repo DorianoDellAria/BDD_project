@@ -10,6 +10,7 @@ class FuncDep:
     def __str__(self):
         return self.tableName +" : ("+ self.lhs+") -> " + self.rhs
 
+    """vérifie que la DF est respectée"""
     def check(self,other):
         cursor = other.db.execute("SELECT {},{} from {};".format(commaConcat(self.lhs.split(' ')),self.rhs,self.tableName))
         dico = {}
@@ -28,7 +29,7 @@ class FuncDep:
 
 
     
-
+"""concaténation, séparée d'espace, de chaine de caractère"""
 def concat(l):
     chain = ''
     for i in range(len(l)-1):
@@ -37,6 +38,7 @@ def concat(l):
     chain+=l[len(l)-1]
     return chain
 
+"""concaténation; séparée de virgule, de chaine de caractère mais """
 def commaConcat(l):
     chain = ''
     for i in range(len(l)-1):
