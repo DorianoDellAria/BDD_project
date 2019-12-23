@@ -45,21 +45,24 @@ class DataBase:
             return
 
         """condition d'existance de la gauche"""
+        newLHS=lhs.split()[0]
         for i in lhs.split(' '):
             if i not in self.getColumn(tableName):
                 print("lhs : this column doesn't exist")
                 return
+            if i not in newLHS:
+                print(newLHS)
+                newLHS+= ' '+i
         
         """condition d'existance de la droite"""
         if rhs not in self.getColumn(tableName):
             print("rhs : this column doesn't exist")
             return
         
-
         tmp = 'INSERT INTO FuncDep VALUES (?,?,?);'
-        self.db.execute(tmp,(tableName,lhs,rhs))
+        self.db.execute(tmp,(tableName,newLHS,rhs))
         self.db.commit()
-        self.df += [FuncDep.FuncDep(tableName,lhs,rhs),]
+        self.df += [FuncDep.FuncDep(tableName,newLHS,rhs),]
     
     def getFD(self, table=None)->str:
         chain =''
@@ -168,7 +171,7 @@ class DataBase:
         for i in range(len(sKey)):
             sKey[i] = sKey[i].replace(chain,'')
         result = deepcopy(sKey)
-        for loop in range(len(sKey)):
+        for _ in range(len(sKey)):
             copy = deepcopy(result)
             for i in range(len(sKey)):
                 for j in range(len(sKey)):

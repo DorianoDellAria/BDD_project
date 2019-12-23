@@ -135,9 +135,9 @@ class command(cmd.Cmd):
         try:
             parsed = self.bcnf_parser.parse_args(line.split())
             if self.data.checkBCNF(parsed.table):
-                print('La table '+parsed.table+' est en BCNF')
+                print('the table '+parsed.table+' is in BCNF')
             else:
-                print('La table '+parsed.table+' n\'est pas en BCNF')
+                print('the table '+parsed.table+' isn\'t in BCNF')
         except SystemExit:
             return
 
@@ -145,9 +145,9 @@ class command(cmd.Cmd):
         try:
             parsed = self.threenf_parser.parse_args(line.split())
             if (self.data.check3NF(parsed.table)):
-                print('La table '+parsed.table+' est en 3NF')
+                print('the table '+parsed.table+' is in 3NF')
             else:
-                print('La table '+parsed.table+' n\'est pas en 3NF')
+                print('the table '+parsed.table+' isn\'t in 3NF')
         except SystemExit:
             return
     
@@ -156,6 +156,8 @@ class command(cmd.Cmd):
             parsed= self.decomp_parser.parse_args(line.split())
             if not self.data.check3NF(parsed.table):
                 self.data.decompose(parsed.table,parsed.db)
+            else:
+                print("this table is already in 3NF")
         except SystemExit:
             return
 
