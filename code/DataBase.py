@@ -5,6 +5,7 @@ from random import shuffle
 
 class DataBase:
     def __init__(self, name):
+        self.name = name
         self.db = sqlite3.connect(name)
         self.df = []
         if 'FuncDep' in self.getTables():
@@ -12,7 +13,7 @@ class DataBase:
             for t in cursor:
                 self.df += [FuncDep.FuncDep(t[0],t[1],t[2]),]
 
-    def getTables(self):
+    def getTables(self)->list:
         cursor = self.db.execute("SELECT * FROM sqlite_master WHERE type='table'")
         chain = []
         for i in cursor:
@@ -60,7 +61,7 @@ class DataBase:
         self.db.commit()
         self.df += [FuncDep.FuncDep(tableName,lhs,rhs),]
     
-    def getFD(self, table=None):
+    def getFD(self, table=None)->str:
         chain =''
         for i in range(len(self.df)):
             if table==None or table==self.df[i].tableName:
@@ -68,7 +69,7 @@ class DataBase:
                 chain+='\n'
         return chain
 
-    def removeFuncDep(self,number):
+    def removeFuncDep(self,number)->None:
         if number == -1:
             print(self.getFD())
             number = int(input("which one do you want to remove ? : "))
@@ -81,7 +82,7 @@ class DataBase:
         self.db.commit()
         self.df.pop(number)
     
-    def checkFD(self):
+    def checkFD(self)->None:
         for i in self.df:
             print(i, " : ", i.check(self))
 
@@ -106,7 +107,7 @@ class DataBase:
         return newdep
 
 
-    def cons(self,table):
+    def cons(self,table)->list:
         tmp = deepcopy(self.df)
         b=True
         res = []
@@ -125,13 +126,13 @@ class DataBase:
                         b=False
                         break
                 if b:
-                    print(tmp[i])
+                    # print(tmp[i])
                     res += [tmp.pop(i),]
                     b=True
                     break
         return res
             
-    def sKey(self, table):
+    def sKey(self, table)->list:
         column = self.getColumn(table)
         obvious = ''
         toComp=[]
@@ -151,7 +152,7 @@ class DataBase:
         # print(obvious)
         #end of finding obvious element
         if include( self.getColumn(table) ,self.closure(obvious,self.df,table)):
-            return obvious
+            return [obvious]
         else:
             candidate=[]
             for i in range(1,len(toComp)+1):
@@ -163,7 +164,7 @@ class DataBase:
                     sKey+=[i,]
         return self.key(sKey,obvious)
 
-    def key(self,sKey:list,chain:str):
+    def key(self,sKey:list,chain:str)->list:
         for i in range(len(sKey)):
             sKey[i] = sKey[i].replace(chain,'')
         result = deepcopy(sKey)
@@ -184,9 +185,8 @@ class DataBase:
         return result
     
     def checkBCNF(self, table:str)->bool:
-        keys = self.sKey(table)
         for i in self.df:
-            if i.tableName==table and not i.lhs in keys:
+            if i.tableName==table and not include(self.getColumn(table),self.closure(i.lhs,self.df,table)):
                 return False
         return True
     
@@ -196,15 +196,82 @@ class DataBase:
         else:
             keys = self.sKey(table) 
             for i in self.df:
-                if i.tableName==table and (i.lhs not in keys) and (not includeInKey(i.rhs,keys)):
+                if i.tableName==table and not include(self.getColumn(table),self.closure(i.lhs,self.df,table)) and (not includeInKey(i.rhs,keys)):
                     return False
             return True
-                
-                    
-
-                    
 
 
+    def decompose(self,table:str,fileName:str):
+        decomp = DataBase(fileName)
+
+        '''deleting useless df'''
+        copy = deepcopy(self.df)
+        toDel = self.cons(table)
+        if len(toDel)!=0:
+            for i in toDel:
+                copy.pop(copy.index(i))
+
+        '''filter the fd'''
+        fd = []
+        for i in copy:
+            if i.tableName == table:
+                fd+=[i,]
+        
+        '''reseting database'''
+        dtable=decomp.getTables()
+        if len(dtable)!=0:
+            for i in range(len(dtable)):
+                decomp.db.execute("DROP TABLE {};".format(dtable[i]))
+        
+        '''creating tables'''
+        decomp.db.execute("ATTACH DATABASE '{}' AS tmp;".format(self.name))
+        typ=getType(self.db,table)
+        for i in range(len(fd)):
+            arr = fd[i].lhs.split()
+            arr += [fd[i].rhs,]
+            values = ''
+            for j in range(len(arr)-1):
+                values += arr[j]+' '+typ[arr[j]]+','
+            values += arr[-1] + ' ' + typ[arr[-1]] 
+            # print(values)
+            decomp.db.execute("CREATE TABLE {} ({})".format(chr(i+65),values))
+            decomp.addFuncDep(chr(i+65),FuncDep.concat(arr[0:len(arr)-1]),arr[-1])
+            decomp.db.execute("INSERT INTO {} SELECT {} FROM tmp.{};".format(chr(i+65),FuncDep.commaConcat(arr),table))
+            decomp.db.commit()
+        
+
+        keys = self.sKey(table)
+        tmp = decomp.getTables()
+        for i in range(len(keys)):
+            test=True
+            for j in range(len(tmp)):
+                col = decomp.getColumn(tmp[i])
+                if include(keys[i].split(),col):
+                    test=False
+                    break
+            if test:
+                values=''
+                key = keys[i].split(' ')
+                for j in range(len(key)-1):
+                    values += key[j]+' '+typ[key[j]]+','
+                values += key[-1]+' '+typ[key[-1]]
+                decomp.db.execute("CREATE TABLE {} ({});".format('K'+chr(i+65),values))
+                decomp.db.execute("INSERT INTO {} SELECT {} FROM tmp.{};".format('K'+chr(i+65),FuncDep.commaConcat(keys[i].split()),table))
+
+        decomp.db.commit()
+        decomp.db.execute("DETACH DATABASE 'tmp';")
+        decomp.close()
+    
+
+
+
+def getType(db:sqlite3.Connection,table:str)->dict:
+    cursor = db.execute("PRAGMA table_info({})".format(table))
+    res = {}
+    for i in cursor:
+        res[i[1]]=i[2]
+    return res
+        
 
 
 

@@ -36,8 +36,12 @@ class command(cmd.Cmd):
         self.threenf_parser = argparse.ArgumentParser(prog='3nf')
         self.threenf_parser.add_argument('table', help='name of the table')
 
+        self.decomp_parser = argparse.ArgumentParser(prog='decomposition')
+        self.decomp_parser.add_argument('table', help='name of the table')
+        self.decomp_parser.add_argument('db',help='name of the database',nargs='?',default='decomposition.db')
+
     intro = 'Bienvenue\n'
-    prompt = 'sqlfat>'
+    prompt = '> '
 
     def do_EOF(self, line):
         self.data.close()
@@ -110,6 +114,8 @@ class command(cmd.Cmd):
         try:
             parsed = self.cons_parser.parse_args(line.split())
             toDel = self.data.cons(parsed.table)
+            for i in toDel:
+                print(i)
             if len(toDel)!=0:
                 answer = str(input('Do you want do delete ? (y/n) : '))
                 if answer == 'y':
@@ -138,7 +144,18 @@ class command(cmd.Cmd):
     def do_3nf(self,line):
         try:
             parsed = self.threenf_parser.parse_args(line.split())
-            print(self.data.check3NF(parsed.table))
+            if (self.data.check3NF(parsed.table)):
+                print('La table '+parsed.table+' est en 3NF')
+            else:
+                print('La table '+parsed.table+' n\'est pas en 3NF')
+        except SystemExit:
+            return
+    
+    def do_decompose(self,line):
+        try:
+            parsed= self.decomp_parser.parse_args(line.split())
+            if not self.data.check3NF(parsed.table):
+                self.data.decompose(parsed.table,parsed.db)
         except SystemExit:
             return
 
